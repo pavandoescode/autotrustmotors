@@ -43,8 +43,10 @@ export default function VehicleCard({ vehicle, priority = false }: VehicleCardPr
   const fuelStyle = fuelColors[vehicle.fuelType] ?? { bg: "bg-gray-100", text: "text-gray-700" };
 
   return (
-    // `relative` is required so the stretched ::after on the title Link fills this card
+    // `relative` is required so the absolute overlay Link fills this card
     <div className="group relative bg-white border-2 border-border-light rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-brand-primary/40 hover:-translate-y-0.5">
+      {/* Invisible link covering the entire card */}
+      <Link href={`/cars/${vehicle.slug}`} className="absolute inset-0 z-10 block" aria-label="View car details" />
 
       {/* Images (Scrollable Slider) */}
       <div className="relative aspect-[16/10] bg-surface-light overflow-hidden group/slider">
@@ -113,10 +115,10 @@ export default function VehicleCard({ vehicle, priority = false }: VehicleCardPr
       <div className="p-4">
         {/* Title — ::after stretched to fill the whole card = entire card is clickable */}
         <div className="mb-2">
-          <h3 className="text-sm font-bold text-text-primary group-hover:text-brand-primary transition-colors line-clamp-1 leading-tight">
+          <h3 className="text-sm font-bold text-text-primary group-hover:text-brand-primary transition-colors line-clamp-1 leading-tight relative z-20">
             <Link
               href={`/cars/${vehicle.slug}`}
-              className="after:absolute after:inset-0 after:z-10 focus:outline-none"
+              className="focus:outline-none"
             >
               {vehicle.title}
             </Link>

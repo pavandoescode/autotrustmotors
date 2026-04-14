@@ -70,7 +70,7 @@ export default async function StockPage({ searchParams }: StockPageProps) {
               </span>
             )}
           </h1>
-          <p className="text-blue-100 text-sm sm:text-base mt-2">
+          <p className="text-blue-100 text-xs sm:text-sm mt-2">
             150-Point Inspected <span className="mx-1.5 opacity-50">&bull;</span> Verified History <span className="mx-1.5 opacity-50">&bull;</span> Transparent Pricing
           </p>
         </div>
