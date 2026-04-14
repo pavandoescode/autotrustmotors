@@ -24,26 +24,15 @@ interface StockPageProps {
   }>;
 }
 
+import { getVehiclesData } from "@/lib/api/vehicles";
+
 async function getVehicles(params: Record<string, string | undefined>) {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const searchParams = new URLSearchParams();
-
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) searchParams.set(key, value);
-    });
-
-    if (!searchParams.has("status")) searchParams.set("status", "Available");
-    if (!searchParams.has("limit")) searchParams.set("limit", "12");
-    if (!searchParams.has("sort")) searchParams.set("sort", "-createdAt");
-
-    const res = await fetch(`${baseUrl}/api/vehicles?${searchParams.toString()}`, {
-      cache: "no-store",
-    });
-    return await res.json();
-  } catch {
-    return { success: false, data: [], pagination: { total: 0, page: 1, limit: 12, totalPages: 0 } };
-  }
+  const query = { ...params };
+  if (!query.status) query.status = "Available";
+  if (!query.limit) query.limit = "12";
+  if (!query.sort) query.sort = "-createdAt";
+  
+  return await getVehiclesData(query);
 }
 
 export default async function StockPage({ searchParams }: StockPageProps) {

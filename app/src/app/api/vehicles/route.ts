@@ -1,76 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getVehiclesData } from '@/lib/api/vehicles';
 import dbConnect from '@/lib/mongodb';
 import Vehicle from '@/models/Vehicle';
-import '@/models/Category'; // Required for .populate('categoryId')
 
 // GET /api/vehicles — List vehicles with filters & pagination
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect();
-
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '12');
-    const brand = searchParams.get('brand');
-    const model = searchParams.get('model');
-    const fuelType = searchParams.get('fuelType');
-    const transmission = searchParams.get('transmission');
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-    const status = searchParams.get('status');
-    const categoryId = searchParams.get('categoryId');
-    const sort = searchParams.get('sort') || '-createdAt';
-    const search = searchParams.get('search');
+    const params = Object.fromEntries(searchParams.entries());
 
-    const slug = searchParams.get('slug');
+    const result = await getVehiclesData(params);
 
-    // Build filter object
-    const filter: Record<string, unknown> = {};
-
-    // When the user is actively searching, don't restrict by brand —
-    // the search itself already matches across title, brand and model.
-    if (brand && !search) filter.brand = { $regex: brand, $options: 'i' };
-    if (model) filter.model = { $regex: model, $options: 'i' };
-    if (fuelType) filter.fuelType = fuelType;
-    if (transmission) filter.transmission = transmission;
-    if (status) filter.status = status;
-    if (categoryId) filter.categoryId = categoryId;
-    if (slug) filter.slug = slug;
-
-    if (minPrice || maxPrice) {
-      filter.price = {};
-      if (minPrice) (filter.price as Record<string, number>).$gte = parseInt(minPrice);
-      if (maxPrice) (filter.price as Record<string, number>).$lte = parseInt(maxPrice);
+    if (!result.success) {
+      return NextResponse.json(
+        { success: false, error: result.error || 'Failed to fetch vehicles' },
+        { status: 500 }
+      );
     }
 
-    if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { brand: { $regex: search, $options: 'i' } },
-        { model: { $regex: search, $options: 'i' } },
-      ];
-    }
-
-    const skip = (page - 1) * limit;
-    const total = await Vehicle.countDocuments(filter);
-
-    const vehicles = await Vehicle.find(filter)
-      .populate('categoryId', 'name slug')
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
-    return NextResponse.json({
-      success: true,
-      data: vehicles,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('GET /api/vehicles error:', error);
     return NextResponse.json(

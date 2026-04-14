@@ -8,17 +8,11 @@ import Testimonials from "@/components/organisms/Testimonials";
 import BrandCarousel from "@/components/molecules/BrandCarousel";
 import { IVehicle } from "@/types";
 
+import { getVehiclesData } from "@/lib/api/vehicles";
+
 async function getLatestVehicles(): Promise<IVehicle[]> {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/vehicles?limit=6&status=Available`, {
-      cache: "no-store",
-    });
-    const data = await res.json();
-    return data.success ? data.data : [];
-  } catch {
-    return [];
-  }
+  const result = await getVehiclesData({ limit: 6, status: "Available" });
+  return result.data || [];
 }
 
 const promoBenefits = [
