@@ -65,9 +65,9 @@ export default function FilterBar({
   return (
     <div className="bg-white border border-border-light rounded-xl p-4">
       {/* Row 1: Search + Key Filters + Search Button */}
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto_auto] gap-3 items-end">
+      <div className="grid grid-cols-4 sm:grid-cols-[1fr_auto_auto_auto_auto] gap-3 items-end">
         {/* Search Input */}
-        <div className="relative">
+        <div className="relative col-span-3 sm:col-span-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
           <input
             type="text"
@@ -79,12 +79,20 @@ export default function FilterBar({
           />
         </div>
 
+        {/* Search Button */}
+        <button
+          onClick={applyFilters}
+          className="col-span-1 sm:col-span-1 px-2 sm:px-5 py-3 bg-brand-primary text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-brand-primary-hover transition-colors whitespace-nowrap flex items-center justify-center sm:order-last"
+        >
+          Search
+        </button>
+
         {/* Brand */}
-        <div className="relative">
+        <div className="relative col-span-2 sm:col-span-1">
           <select
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            className="appearance-none pl-4 pr-9 py-3 bg-surface-light border border-border-light rounded-lg text-sm text-text-primary focus:outline-none focus:border-brand-primary transition-colors cursor-pointer min-w-[130px]"
+            className="w-full appearance-none pl-4 pr-9 py-3 bg-surface-light border border-border-light rounded-lg text-sm text-text-primary focus:outline-none focus:border-brand-primary transition-colors cursor-pointer sm:min-w-[130px]"
           >
             {brands.map((b) => (
               <option key={b} value={b}>{b}</option>
@@ -94,11 +102,11 @@ export default function FilterBar({
         </div>
 
         {/* Fuel Type */}
-        <div className="relative">
+        <div className="relative col-span-2 sm:col-span-1">
           <select
             value={fuelType}
             onChange={(e) => setFuelType(e.target.value)}
-            className="appearance-none pl-4 pr-9 py-3 bg-surface-light border border-border-light rounded-lg text-sm text-text-primary focus:outline-none focus:border-brand-primary transition-colors cursor-pointer min-w-[130px]"
+            className="w-full appearance-none pl-4 pr-9 py-3 bg-surface-light border border-border-light rounded-lg text-sm text-text-primary focus:outline-none focus:border-brand-primary transition-colors cursor-pointer sm:min-w-[130px]"
           >
             {fuelTypes.map((f) => (
               <option key={f} value={f}>{f}</option>
@@ -110,7 +118,7 @@ export default function FilterBar({
         {/* More Filters toggle */}
         <button
           onClick={() => setShowMoreFilters(!showMoreFilters)}
-          className={`flex items-center gap-1.5 px-4 py-3 border rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+          className={`col-span-4 sm:col-span-1 flex items-center justify-center gap-1.5 px-4 py-3 border rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
             showMoreFilters
               ? "bg-brand-primary text-white border-brand-primary"
               : "bg-surface-light border-border-light text-text-secondary hover:border-brand-primary"
@@ -118,14 +126,6 @@ export default function FilterBar({
         >
           <SlidersHorizontal className="w-4 h-4" />
           More
-        </button>
-
-        {/* Search Button */}
-        <button
-          onClick={applyFilters}
-          className="px-5 py-3 bg-brand-primary text-white text-sm font-semibold rounded-lg hover:bg-brand-primary-hover transition-colors whitespace-nowrap"
-        >
-          Search
         </button>
       </div>
 

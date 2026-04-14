@@ -70,9 +70,9 @@ export default function HeroSection() {
 
         {/* Search form */}
         <div className="bg-white rounded-xl p-4 sm:p-5 max-w-3xl mx-auto shadow-2xl">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
             {/* Brand */}
-            <div className="relative">
+            <div className="relative col-span-1">
               <select
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
@@ -86,7 +86,7 @@ export default function HeroSection() {
             </div>
 
             {/* Fuel */}
-            <div className="relative">
+            <div className="relative col-span-1">
               <select
                 value={fuelType}
                 onChange={(e) => setFuelType(e.target.value)}
@@ -100,7 +100,7 @@ export default function HeroSection() {
             </div>
 
             {/* Budget */}
-            <div className="relative">
+            <div className="relative col-span-2 sm:col-span-1">
               <select
                 value={priceRange}
                 onChange={(e) => setPriceRange(e.target.value)}
