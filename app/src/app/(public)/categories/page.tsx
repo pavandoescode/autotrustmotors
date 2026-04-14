@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Car, ArrowRight } from "lucide-react";
 import { ICategory } from "@/types";
+import { getCategoriesData } from "@/lib/api/categories";
 
 export const metadata: Metadata = {
   title: "Categories",
@@ -12,17 +13,10 @@ interface CategoryWithCount extends ICategory {
   vehicleCount: number;
 }
 
-async function getCategories(): Promise<CategoryWithCount[]> {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/categories`, { cache: "no-store" });
-    const data = await res.json();
-    if (!data.success) return [];
-    // Only return categories that have at least one vehicle
-    return (data.data as CategoryWithCount[]).filter((c) => c.vehicleCount > 0);
-  } catch {
-    return [];
-  }
+async function getCategories() {
+  const result = await getCategoriesData();
+  // Only return categories that have at least one vehicle
+  return (result.data || []).filter((c: any) => c.vehicleCount > 0);
 }
 
 export default async function CategoriesPage() {

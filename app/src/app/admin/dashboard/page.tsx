@@ -5,44 +5,33 @@ import {
 import Link from "next/link";
 
 // ── Data fetching ────────────────────────────────────────────────────
+import { getVehiclesData } from "@/lib/api/vehicles";
+import { getLeadsData } from "@/lib/api/leads";
+import { getCategoriesData } from "@/lib/api/categories";
+
 async function getDashboardStats() {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const [vehiclesRes, availableRes, soldRes, leadsRes, categoriesRes] = await Promise.all([
-      fetch(`${baseUrl}/api/vehicles?limit=1`, { cache: "no-store" }),
-      fetch(`${baseUrl}/api/vehicles?limit=1&status=Available`, { cache: "no-store" }),
-      fetch(`${baseUrl}/api/vehicles?limit=1&status=Sold`, { cache: "no-store" }),
-      fetch(`${baseUrl}/api/leads?limit=5`, { cache: "no-store" }),
-      fetch(`${baseUrl}/api/categories`, { cache: "no-store" }),
-    ]);
+  const [vehiclesResult, availableResult, soldResult, leadsResult, categoriesResult] = await Promise.all([
+    getVehiclesData({ limit: 1 }),
+    getVehiclesData({ limit: 1, status: "Available" }),
+    getVehiclesData({ limit: 1, status: "Sold" }),
+    getLeadsData({ limit: 5 }),
+    getCategoriesData(),
+  ]);
 
-    const vehiclesData = await vehiclesRes.json();
-    const availableData = await availableRes.json();
-    const soldData = await soldRes.json();
-    const leadsData = await leadsRes.json();
-    const categoriesData = await categoriesRes.json();
+  const recentLeads = leadsResult.data || [];
+  const statusCounts = leadsResult.statusCounts || { New: 0, Contacted: 0, Resolved: 0 };
 
-    const recentLeads = leadsData.data || [];
-    const statusCounts = leadsData.statusCounts || { New: 0, Contacted: 0, Resolved: 0 };
-
-    return {
-      totalVehicles: vehiclesData.pagination?.total || 0,
-      availableVehicles: availableData.pagination?.total || 0,
-      soldVehicles: soldData.pagination?.total || 0,
-      totalLeads: leadsData.pagination?.total || 0,
-      newLeads: statusCounts.New || 0,
-      contactedLeads: statusCounts.Contacted || 0,
-      resolvedLeads: statusCounts.Resolved || 0,
-      recentLeads,
-      totalCategories: categoriesData.success ? categoriesData.data.length : 0,
-    };
-  } catch {
-    return {
-      totalVehicles: 0, availableVehicles: 0, soldVehicles: 0,
-      totalLeads: 0, newLeads: 0, contactedLeads: 0, resolvedLeads: 0,
-      recentLeads: [], totalCategories: 0,
-    };
-  }
+  return {
+    totalVehicles: vehiclesResult.pagination?.total || 0,
+    availableVehicles: availableResult.pagination?.total || 0,
+    soldVehicles: soldResult.pagination?.total || 0,
+    totalLeads: leadsResult.pagination?.total || 0,
+    newLeads: statusCounts.New || 0,
+    contactedLeads: statusCounts.Contacted || 0,
+    resolvedLeads: statusCounts.Resolved || 0,
+    recentLeads,
+    totalCategories: categoriesResult.success ? categoriesResult.data.length : 0,
+  };
 }
 
 // ── Page ──────────────────────────────────────────────────────────────

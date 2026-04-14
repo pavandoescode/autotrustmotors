@@ -102,3 +102,27 @@ export async function getVehiclesData(params: GetVehiclesParams) {
     };
   }
 }
+
+export async function getVehicleBySlugOrId(identifier: string) {
+  try {
+    await dbConnect();
+    
+    // Check if identifier is an ObjectId
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(identifier);
+    const query = isObjectId ? { _id: identifier } : { slug: identifier };
+
+    const vehicle = await Vehicle.findOne(query)
+      .populate('categoryId', 'name slug')
+      .lean();
+
+    if (!vehicle) return { success: false, error: 'Vehicle not found' };
+
+    return { 
+      success: true, 
+      data: JSON.parse(JSON.stringify(vehicle)) 
+    };
+  } catch (error) {
+    console.error('getVehicleBySlugOrId error:', error);
+    return { success: false, error: 'Failed to fetch vehicle' };
+  }
+}

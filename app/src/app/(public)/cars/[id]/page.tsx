@@ -13,6 +13,7 @@ import VehicleCard from "@/components/molecules/VehicleCard";
 import { IVehicle } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import VehiclePageTracker from "@/components/atoms/VehiclePageTracker";
+import { getVehicleBySlugOrId, getVehiclesData } from "@/lib/api/vehicles";
 
 interface VehiclePageProps {
   params: Promise<{ id: string }>;
@@ -20,15 +21,8 @@ interface VehiclePageProps {
 
 
 
-async function getVehicle(id: string): Promise<IVehicle | null> {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/vehicles/${id}`, { cache: "no-store" });
-    const data = await res.json();
-    return data.success ? data.data : null;
-  } catch {
-    return null;
-  }
+async function getVehicle(id: string) {
+  return await getVehicleBySlugOrId(id);
 }
 
 async function getRelatedVehicles(
@@ -37,68 +31,64 @@ async function getRelatedVehicles(
   excludeId: string,
   price: number
 ): Promise<IVehicle[]> {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const minTarget = 3;
-    const existingIds = new Set([excludeId]);
+  const minTarget = 3;
+  const existingIds = new Set([excludeId]);
 
-    // First: fetch same category
-    const catRes = await fetch(
-      `${baseUrl}/api/vehicles?categoryId=${encodeURIComponent(categoryId)}&limit=4&status=Available`,
-      { cache: "no-store" }
-    );
-    const catData = await catRes.json();
-    const catVehicles: IVehicle[] = catData.success
-      ? catData.data.filter((v: IVehicle) => !existingIds.has(v._id))
-      : [];
+  // First: fetch same category
+  const catData = await getVehiclesData({
+    categoryId,
+    limit: 4,
+    status: "Available"
+  });
+  const catVehicles: IVehicle[] = (catData.data || [])
+    .filter((v: IVehicle) => !existingIds.has(v._id));
 
-    if (catVehicles.length >= minTarget) {
-      return catVehicles.slice(0, minTarget);
-    }
-
-    catVehicles.forEach((v) => existingIds.add(v._id));
-
-    // Second: fill with same brand
-    const remaining1 = minTarget - catVehicles.length;
-    const brandRes = await fetch(
-      `${baseUrl}/api/vehicles?brand=${encodeURIComponent(brand)}&limit=${remaining1 + 3}&status=Available`,
-      { cache: "no-store" }
-    );
-    const brandData = await brandRes.json();
-    const brandVehicles: IVehicle[] = brandData.success
-      ? brandData.data.filter((v: IVehicle) => !existingIds.has(v._id)).slice(0, remaining1)
-      : [];
-
-    const combined = [...catVehicles, ...brandVehicles];
-    if (combined.length >= minTarget) {
-      return combined.slice(0, minTarget);
-    }
-
-    brandVehicles.forEach((v) => existingIds.add(v._id));
-
-    // Third: fill with similar-priced vehicles (±30% of price)
-    const minPrice = Math.round(price * 0.7);
-    const maxPrice = Math.round(price * 1.3);
-    const remaining2 = minTarget - combined.length;
-
-    const priceRes = await fetch(
-      `${baseUrl}/api/vehicles?minPrice=${minPrice}&maxPrice=${maxPrice}&limit=${remaining2 + 3}&status=Available`,
-      { cache: "no-store" }
-    );
-    const priceData = await priceRes.json();
-    const priceVehicles: IVehicle[] = priceData.success
-      ? priceData.data.filter((v: IVehicle) => !existingIds.has(v._id)).slice(0, remaining2)
-      : [];
-
-    return [...combined, ...priceVehicles];
-  } catch {
-    return [];
+  if (catVehicles.length >= minTarget) {
+    return catVehicles.slice(0, minTarget);
   }
+
+  catVehicles.forEach((v) => existingIds.add(v._id));
+
+  // Second: fill with same brand
+  const remaining1 = minTarget - catVehicles.length;
+  const brandData = await getVehiclesData({
+    brand,
+    limit: remaining1 + 3,
+    status: "Available"
+  });
+  const brandVehicles: IVehicle[] = (brandData.data || [])
+    .filter((v: IVehicle) => !existingIds.has(v._id))
+    .slice(0, remaining1);
+
+  const combined = [...catVehicles, ...brandVehicles];
+  if (combined.length >= minTarget) {
+    return combined.slice(0, minTarget);
+  }
+
+  brandVehicles.forEach((v) => existingIds.add(v._id));
+
+  // Third: fill with similar-priced vehicles (±30% of price)
+  const minPrice = Math.round(price * 0.7);
+  const maxPrice = Math.round(price * 1.3);
+  const remaining2 = minTarget - combined.length;
+
+  const priceData = await getVehiclesData({
+    minPrice,
+    maxPrice,
+    limit: remaining2 + 3,
+    status: "Available"
+  });
+  const priceVehicles: IVehicle[] = (priceData.data || [])
+    .filter((v: IVehicle) => !existingIds.has(v._id))
+    .slice(0, remaining2);
+
+  return [...combined, ...priceVehicles];
 }
 
 export async function generateMetadata({ params }: VehiclePageProps): Promise<Metadata> {
   const { id } = await params;
-  const vehicle = await getVehicle(id);
+  const result = await getVehicle(id);
+  const vehicle = result.data;
   if (!vehicle) return { title: "Vehicle Not Found" };
   return {
     title: `${vehicle.title} - ${vehicle.year}`,
@@ -108,7 +98,8 @@ export async function generateMetadata({ params }: VehiclePageProps): Promise<Me
 
 export default async function VehicleDetailsPage({ params }: VehiclePageProps) {
   const { id } = await params;
-  const vehicle = await getVehicle(id);
+  const result = await getVehicle(id);
+  const vehicle = result.data;
 
   if (!vehicle) notFound();
 
@@ -267,7 +258,7 @@ export default async function VehicleDetailsPage({ params }: VehiclePageProps) {
                 <div className="pt-6 border-t border-border-light">
                   <h3 className="text-lg font-bold text-text-primary mb-5">Features & Highlights</h3>
                   <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-2.5">
-                    {vehicle.features.map((feature) => (
+                    {vehicle.features.map((feature: string) => (
                       <div key={feature} className="flex items-center gap-2 text-sm text-text-secondary py-1">
                         <Shield className="w-3.5 h-3.5 text-text-muted shrink-0" />
                         <span className="font-sans">{feature}</span>

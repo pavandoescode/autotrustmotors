@@ -8,22 +8,19 @@ export const metadata: Metadata = {
   description: "Browse our stunning gallery of quality pre-owned vehicles. See the finest cars from top brands in our showroom.",
 };
 
+import { getVehiclesData } from "@/lib/api/vehicles";
+
 async function getAllVehicleImages(): Promise<{ url: string; title: string }[]> {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/vehicles?limit=50`, { cache: "no-store" });
-    const data = await res.json();
-    if (!data.success) return [];
-    const images: { url: string; title: string }[] = [];
-    data.data.forEach((v: IVehicle) => {
-      v.images.forEach((img) => {
-        images.push({ url: img, title: `${v.year} ${v.title}` });
-      });
+  const result = await getVehiclesData({ limit: 50 });
+  if (!result.success) return [];
+  
+  const images: { url: string; title: string }[] = [];
+  result.data.forEach((v: IVehicle) => {
+    v.images.forEach((img) => {
+      images.push({ url: img, title: `${v.year} ${v.title}` });
     });
-    return images;
-  } catch {
-    return [];
-  }
+  });
+  return images;
 }
 
 export default async function GalleryPage() {
