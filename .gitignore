@@ -44,6 +44,8 @@ next-env.d.ts
 # Markdown files
 *.md
 !README.md
+DESIGN.md
 
 # Application & Lock files
 skills-lock.json
+Design.md
