@@ -47,7 +47,7 @@ export default function VehicleCard({ vehicle, priority = false }: VehicleCardPr
     <div className="group relative bg-white border-2 border-border-light rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-brand-primary/40 hover:-translate-y-0.5">
 
       {/* Images (Scrollable Slider) */}
-      <div className="relative aspect-[16/10] bg-surface-light overflow-hidden z-10 group/slider">
+      <div className="relative aspect-[16/10] bg-surface-light overflow-hidden group/slider">
         {vehicle.images && vehicle.images.length > 0 ? (
           <>
             <div 
@@ -58,7 +58,7 @@ export default function VehicleCard({ vehicle, priority = false }: VehicleCardPr
                 <Link
                   key={index}
                   href={`/cars/${vehicle.slug}`}
-                  className="relative w-full h-full shrink-0 snap-center snap-always block"
+                  className="relative w-full h-full shrink-0 snap-center snap-always block z-20"
                 >
                   <Image
                     src={img}
@@ -74,7 +74,7 @@ export default function VehicleCard({ vehicle, priority = false }: VehicleCardPr
             
             {/* Dots Indicator (Visual hint) */}
             {vehicle.images.length > 1 && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-20 pointer-events-none sm:hidden opacity-100 transition-opacity duration-300">
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-10 pointer-events-none sm:hidden opacity-100 transition-opacity duration-300">
                 {vehicle.images.slice(0, 5).map((_, i) => (
                   <div 
                     key={i} 
@@ -93,7 +93,7 @@ export default function VehicleCard({ vehicle, priority = false }: VehicleCardPr
           </div>
         )}
 
-        {/* Sold overlay text (no pointer events to not block swipe) */}
+        {/* Sold overlay text */}
         {isSold && (
           <div className="absolute inset-0 bg-white/65 flex items-center justify-center z-10 pointer-events-none">
             <span className="px-4 py-1.5 bg-gray-800 text-white text-xs font-bold rounded uppercase tracking-widest leading-none">
@@ -103,7 +103,7 @@ export default function VehicleCard({ vehicle, priority = false }: VehicleCardPr
         )}
 
         {savings > 0 && !isSold && (
-          <div className="absolute top-2.5 right-2.5 z-20 px-2.5 py-1 bg-action-green text-white text-[11px] font-bold rounded-md shadow-sm pointer-events-none">
+          <div className="absolute top-2.5 right-2.5 z-10 px-2.5 py-1 bg-action-green text-white text-[11px] font-bold rounded-md shadow-sm pointer-events-none">
             Save {formatPrice(savings, { short: true })}
           </div>
         )}
@@ -116,7 +116,7 @@ export default function VehicleCard({ vehicle, priority = false }: VehicleCardPr
           <h3 className="text-sm font-bold text-text-primary group-hover:text-brand-primary transition-colors line-clamp-1 leading-tight">
             <Link
               href={`/cars/${vehicle.slug}`}
-              className="after:absolute after:inset-0 focus:outline-none"
+              className="after:absolute after:inset-0 after:z-10 focus:outline-none"
             >
               {vehicle.title}
             </Link>
@@ -156,8 +156,8 @@ export default function VehicleCard({ vehicle, priority = false }: VehicleCardPr
             </span>
           </div>
 
-          {/* Buttons — 40px+ touch targets */}
-          <div className="relative z-[1] flex items-center gap-2 shrink-0">
+          {/* Buttons — Needs z-30+ to be clickable OVER the stretched link */}
+          <div className="relative z-30 flex items-center gap-2 shrink-0">
             {!isSold && (
               <a
                 href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919999999999"}?text=${encodeURIComponent(
@@ -181,7 +181,7 @@ export default function VehicleCard({ vehicle, priority = false }: VehicleCardPr
             )}
             <Link
               href={`/cars/${vehicle.slug}`}
-              className="relative z-[1] flex items-center gap-1.5 px-4 py-2.5 bg-brand-primary text-white text-xs font-bold rounded-lg hover:bg-brand-primary-hover transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-brand-primary text-white text-xs font-bold rounded-lg hover:bg-brand-primary-hover transition-colors"
             >
               View <ArrowRight className="w-3.5 h-3.5" />
             </Link>
