@@ -74,7 +74,7 @@ export default function VehicleCard({ vehicle, priority = false }: VehicleCardPr
             
             {/* Dots Indicator (Visual hint) */}
             {vehicle.images.length > 1 && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-20 pointer-events-none opacity-100 sm:opacity-0 sm:group-hover/slider:opacity-100 transition-opacity duration-300">
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-20 pointer-events-none sm:hidden opacity-100 transition-opacity duration-300">
                 {vehicle.images.slice(0, 5).map((_, i) => (
                   <div 
                     key={i} 
